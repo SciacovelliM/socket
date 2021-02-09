@@ -1,31 +1,62 @@
 #!/usr/bin/env python3
-#https://realpython.com/python-sockets/
 import socket
 
-HOST = '127.0.0.1'  # Indirizzo dell'interfaccia standard di loopback (localhost)
-PORT = 65432        # Porta di ascolto, la lista di quelle utilizzabili parte da >1023)
 
-s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Optionale: permette di riavviare subito il codice,
-# altrimenti bisognerebbe aspettare 2-4 minuti prima di poter riutilizzare(bindare) la stessa porta
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+SERVER_ADDRESS = '127.0.0.1'
 
-s.bind((HOST, PORT))
-s.listen()
-print("[*] In ascolto su %s:%d" % (HOST, PORT))
-clientsocket, address = s.accept()
-with clientsocket as cs:
-    print('Connessione da', address)
+SERVER_PORT = 22224
+
+sock_listen = socket.socket()
+
+sock_listen.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+sock_listen.bind((SERVER_ADDRESS, SERVER_PORT))
+
+sock_listen.listen(5)
+
+print("Server in ascolto su %s." % str((SERVER_ADDRESS, SERVER_PORT)))
+
+
+while True:
+    sock_service, addr_client = sock_listen.accept()
+    print("\nConnessione ricevuta da tizio tosto " + str(addr_client))
+    print("\nAspetto di ricevere i dati da tizio tosto")
+    contConn=0
     while True:
-        dati = cs.recv(1024)
-        dati.decode()
+        dati = sock_service.recv(2048) #ricevo dati
+        contConn+=1
+        
         if not dati:
+            print("Fine dati dal client. Fine della storia. Reset")
             break
+        
+
         dati = dati.decode()
-        print("Ricevuto '%s' dal client" % dati)
-        dati = "Ciao, " + str(address) + ". Ho ricevuto questo: '" + dati + "'"
-        dati = dati.encode()
-        # Invia i dati modificati al client
-        cs.send(dati)
-        print('Inviato al client:', dati)
+        print("Ricevuto: '%s'" % dati)
+        if dati=='0':
+            print("Chiudo la connessione con tizio tosto" + str(addr_client))
+            break
+        dati = "Risposta a tizio tosto : " + str(addr_client) + ". Il valore del contatore è : " + str(contConn)
+
+        dati = dati.split(";")
+        print(dati)
+        ris=0
+        if dati[0]=="più":
+            ris=double(dati[1])+double(dati[2])
+        elif dati[0]=="meno":
+            ris=double(dati[1])-double(dati[2])
+        elif dati[0]=="per":
+            ris=double(dati[1])*double(dati[2])
+        elif dati[0]=="diviso":
+            ris=double(dati[1])/double(dati[2])
+        dati=str(ris)
+        
+        dati = dati.encode()#trasforma i dati in byte
+
+        
+
+
+        sock_service.send(dati)#invia i dati
+
+    sock_service.close()#chiude la trasmissione
