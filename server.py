@@ -30,28 +30,32 @@ def ricevi_comandi(socket):
             if not dati:
                 print("Fine dati dal client. Fine della storia. Reset")
                 break
-            
 
             dati = dati.decode()
+
+            op,n1,n2 = dati.split(";")#separa i caratteri che hanno nel mezzo ";" e trasforma la stringa in una lista
             print("Ricevuto: '%s'" % dati)
             if dati=='0':
                 print("Chiudo la connessione con tizio tosto" + str(addr_client))
                 break
             dati = "Risposta a tizio tosto : " + str(addr_client) + ". Il valore del contatore è : " + str(contConn)
 
-            dati = dati.split(";")#separa i caratteri che hanno nel mezzo ";" e trasforma la stringa in una lista
-            print(dati)
-            ris=int()
+            
+            print(op)
+            print(n1)
+            print(n2)
+
             #controlla la cella 0 contenente l'operazione da svolgere per poi assegnarla alle celle 1 e 2 ed applicare l'operazione
-            if dati[0]=="più":
-                ris= dati[1] + dati[2]
-            elif dati[0]=="meno":
-                ris= dati[1] - dati[2]
-            elif dati[0]=="per":
-                ris= dati[1] * dati[2]
-            elif dati[0]=="diviso":
-                ris= dati[1] / dati[2]
+            if op=="più":
+                ris= float(n1) + float(n2)
+            elif op=="meno":
+                ris= float(n1) - float(n2)
+            elif op=="per":
+                ris= float(n1) * float(n2)
+            elif op=="diviso":
+                ris= float(n1) / float(n2)
             dati=str(ris)
+            print("Invio al client dati: "+dati)
             dati = dati.encode()#trasforma i dati in byte
             sock_service.send(dati)#invia i dati
         sock_service.close()#chiude la trasmissione
